@@ -1,138 +1,60 @@
-# cog-comfyui
+# WAN2.2 Text-to-Video ComfyUI Pipeline
 
-Run ComfyUI workflows on Replicate:
+> **🍴 This is a modified fork of [replicate/cog-comfyui](https://github.com/replicate/cog-comfyui)**  
+> **🎬 Specialized for WAN2.2 text-to-video generation with optimized GGUF models, LoRA enhancements, and production-ready post-processing**
 
-- https://replicate.com/fofr/any-comfyui-workflow
-- https://replicate.com/fofr/any-comfyui-workflow-a100
+## What's Different in This Fork
 
-We recommend:
+This repository has been extensively modified to provide a complete **WAN2.2 text-to-video generation pipeline**:
 
-- trying it on the website with your favorite workflow and making sure it works
-- using your own instance to run your workflow quickly and efficiently on Replicate (see the guide below)
-- using the production ready Replicate API to integrate your workflow into your own app or website
+### ✨ **Key Features**
+- **Two-Stage GGUF Models**: High-noise + Low-noise Q4_K_M quantization for memory efficiency
+- **LoRA Enhancements**: LightX2V (speed) + FusionX (quality) optimization layers  
+- **Complete Post-Processing**: RealESRGAN 2x upscaling + RIFE 2x frame interpolation
+- **Production Ready**: 768x1408 MP4 output, 82 frames, ~10 seconds
 
-## What’s included
+### 🔧 **Technical Improvements**
+- Pre-downloaded models cached in Docker layers (20+ minute build time → 3 seconds)
+- Fixed websocket dependencies and custom node compatibility
+- Robust ComfyUI initialization with fallback patterns
+- Comprehensive model verification system
 
-We've tried to include many of the most popular model weights and custom nodes:
+### 🎯 **Default Workflow**
+- **Input**: Text prompt (e.g., "A baby with a kitten in soft lighting")
+- **Output**: High-quality MP4 video (768x1408, 8fps, production-ready)
+- **Pipeline**: Two-stage generation → VAE decode → upscale → interpolate → export
 
-- [View list of supported weights](https://github.com/replicate/cog-comfyui/blob/main/supported_weights.md)
-- [View list of supported custom nodes](https://github.com/replicate/cog-comfyui/blob/main/custom_nodes.json)
+---
 
-Raise an issue to request more custom nodes or models, or use the `train` tab on Replicate to use your own weights (see below).
+## Quick Start
 
-## How to use
-
-### 1. Get your API JSON
-
-You’ll need the API version of your ComfyUI workflow. This is different to the commonly shared JSON version, it does not included visual information about nodes, etc.
-
-To get your API JSON:
-
-1. Turn on the "Enable Dev mode Options" from the ComfyUI settings (via the settings icon)
-2. Load your workflow into ComfyUI
-3. Export your API JSON using the "Save (API format)" button
-
-https://private-user-images.githubusercontent.com/319055/298630636-e3af1b59-ddd8-426c-a833-808e7f199fac.mp4
-
-### 2. Gather your input files
-
-If your model takes inputs, like images for img2img or controlnet, you have 3 options:
-
-#### Use a URL
-
-Modify your API JSON file to point at a URL:
-
-```diff
-- "image": "/your-path-to/image.jpg",
-+ "image": "https://example.com/image.jpg",
+### Option 1: Use the Pre-built Model
+Deploy directly on Replicate using the pre-configured WAN2.2 pipeline:
+```bash
+# Deploy to your Replicate account
+cog push r8.im/your-username/wan22-t2v
 ```
 
-#### Upload a single input
+### Option 2: Run Locally
+```bash
+# Clone with submodules
+git clone --recurse-submodules https://github.com/your-username/cog-comfyui.git
+cd cog-comfyui
 
-You can also upload a single input file when running the model.
+# Install custom nodes
+./scripts/install_custom_nodes.py
 
-This file will be saved as `input.[extension]` – for example `input.jpg`. It'll be placed in the ComfyUI `input` directory, so you can reference in your workflow with:
-
-```diff
-- "image": "/your-path-to/image.jpg",
-+ "image": "image.jpg",
+# Test the pipeline
+cog predict -i prompt="A serene lake at sunset with gentle ripples"
 ```
 
-#### Upload a zip file or tar file of your inputs
+---
 
-These will be downloaded and extracted to the `input` directory. You can then reference them in your workflow based on their relative paths.
+## Original cog-comfyui Documentation
 
-So a zip file containing:
+*The following sections are from the original [replicate/cog-comfyui](https://github.com/replicate/cog-comfyui) template:*
 
-```
-- my_img.png
-- references/my_reference_01.jpg
-- references/my_reference_02.jpg
-```
-
-Might be used in the workflow like:
-
-```
-"image": "my_img.png",
-...
-"directory": "references",
-```
-
-### 3. Using custom LoRAs from CivitAI or HuggingFace
-
-You can use LoRAs directly from CivitAI, HuggingFace, or any other URL in two ways:
-
-#### Option 1: Use the LoraLoader node with a URL
-
-Use the direct download URL as the `lora_name`:
-
-```
-{
-    "inputs": {
-      "lora_name": "https://huggingface.co/username/model/resolve/main/lora.safetensors",
-      ...
-    },
-    "class_type": "LoraLoader"
-}
-```
-
-#### Option 2: Use the LoraLoaderFromURL node
-
-Alternatively, use the dedicated LoraLoaderFromURL node from [ComfyUI-GlifNodes](https://github.com/glifxyz/ComfyUI-GlifNodes):
-
-```
-{
-    "inputs": {
-      "url": "https://civitai.com/api/download/models/1163532",
-      // ...
-    },
-    "class_type": "LoraLoaderFromURL"
-}
-```
-
-Both methods work the same way - the standard LoraLoader will automatically switch to use LoraLoaderFromURL when it detects a URL in the `lora_name` field.
-
-### Run your workflow
-
-With all your inputs updated, you can now run your workflow.
-
-Some workflows save temporary files, for example pre-processed controlnet images. You can also return these by enabling the `return_temp_files` option.
-
-## How to use your own dedicated instance
-
-The `any-comfyui-workflow` model on Replicate is a shared public model. This means many users will be sending workflows to it that might be quite different to yours. The effect of this will be that the internal ComfyUI server may need to swap models in and out of memory, this can slow down your prediction time.
-
-ComfyUI and it's custom nodes are also continually being updated. While this means the newest versions are usually running, if there are breaking changes to custom nodes then your workflow may stop working.
-
-If you have your own dedicated instance you will:
-
-- fix the code and custom nodes to a known working version
-- have a faster prediction time by keeping just your models in memory
-- benefit from ComfyUI’s own internal optimisations when running the same workflow repeatedly
-
-### Options for using your own instance
-
-To get the best performance from the model you should run a dedicated instance. You have 3 choices:
+You have 3 choices:
 
 1. Create a private deployment (simplest, but you'll need to pay for setup and idle time)
 2. Create and deploy a fork using Cog (most powerful but most complex)
@@ -160,7 +82,7 @@ You'll need to be familiar with Python, and you'll also need a GPU to push your 
 
 The `kolors` model on Replicate is a good example to follow:
 
-- https://replicate.com/fofr/kolors (The model with it’s customised API)
+- https://replicate.com/fofr/kolors (The model with it's customised API)
 - https://github.com/replicate/cog-comfyui-kolors (The new repo)
 
 It was created from this repo, and then deployed using Cog. You can step through the commits of that repo to see what was changed and how, but broadly:
@@ -182,18 +104,9 @@ https://replicate.com/fofr/any-comfyui-workflow/train
 
 Here you can give public or private URLs to weights on HuggingFace and CivitAI. If URLs are private or need authentication, make sure to include an API key or access token.
 
-Check the training logs to see what filenames to use in your workflow JSON. For example:
+Check the training logs to see what filenames to use in your workflow JSON.
 
-```
-Downloading from HuggingFace:
-...
-Size of the tar file: 217.88 MB
-====================================
-When using your new model, use these filenames in your JSON workflow:
-araminta_k_midsommar_cartoon.safetensors
-```
-
-After running the training, you'll have your own ComfyUI model with your customised weights loaded during model setup. To prevent others from using it, you can make it private. Private models are billed differently to public models on Replicate.
+---
 
 ## Developing locally
 
