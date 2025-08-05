@@ -8,5 +8,10 @@ build:
   run:
     - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/latest/download/pget_$(uname -s)_$(uname -m)" && chmod +x /usr/local/bin/pget
     - pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+    - mkdir -p /src/ComfyUI/models/unet /src/ComfyUI/models/loras
+    - pget https://huggingface.co/QuantStack/Wan2.2-T2V-A14B-GGUF/resolve/main/HighNoise/Wan2.2-T2V-A14B-HighNoise-Q4_K_M.gguf /src/ComfyUI/models/unet/Wan2.2-T2V-A14B-HighNoise-Q4_K_M.gguf
+    - pget https://huggingface.co/QuantStack/Wan2.2-T2V-A14B-GGUF/resolve/main/LowNoise/Wan2.2-T2V-A14B-LowNoise-Q4_K_M.gguf /src/ComfyUI/models/unet/Wan2.2-T2V-A14B-LowNoise-Q4_K_M.gguf
+    - pget https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/Lightx2v/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors /src/ComfyUI/models/loras/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors
+    - pget https://huggingface.co/vrgamedevgirl84/Wan14BT2VFusioniX/resolve/main/FusionX_LoRa/Wan2.1_T2V_14B_FusionX_LoRA.safetensors /src/ComfyUI/models/loras/Wan2.1_T2V_14B_FusionX_LoRA.safetensors
 predict: "predict.py:Predictor"
 train: "train.py:train"
