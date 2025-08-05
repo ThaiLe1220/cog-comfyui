@@ -3,6 +3,7 @@ import shutil
 import tarfile
 import zipfile
 import mimetypes
+import json
 from PIL import Image
 from typing import List, Optional
 from cog import BasePredictor, Input, Path
@@ -27,6 +28,11 @@ ALL_DIRECTORIES = [OUTPUT_DIR, INPUT_DIR, COMFYUI_TEMP_OUTPUT_DIR]
 IMAGE_TYPES = [".jpg", ".jpeg", ".png", ".webp"]
 VIDEO_TYPES = [".mp4", ".mov", ".avi", ".mkv", ".webm"]
 
+# Load WAN2.2 workflow as default
+with open("workflow/workflow-wan22-wan21 (1).json", "r") as file:
+    WAN22_WORKFLOW_JSON = file.read()
+
+# Keep original as fallback
 with open("examples/api_workflows/birefnet_api.json", "r") as file:
     EXAMPLE_WORKFLOW_JSON = file.read()
 
@@ -49,7 +55,9 @@ class Predictor(BasePredictor):
             weights_url = weights
 
         print(f"Downloading user weights from: {weights_url}")
-        WeightsDownloader.download("weights.tar", weights_url, config["USER_WEIGHTS_PATH"])
+        WeightsDownloader.download(
+            "weights.tar", weights_url, config["USER_WEIGHTS_PATH"]
+        )
         for item in os.listdir(config["USER_WEIGHTS_PATH"]):
             source = os.path.join(config["USER_WEIGHTS_PATH"], item)
             destination = os.path.join(config["MODELS_PATH"], item)
@@ -111,9 +119,13 @@ class Predictor(BasePredictor):
 
     def predict(
         self,
+        prompt: str = Input(
+            description="Text prompt for video generation (only used with default WAN2.2 workflow)",
+            default="A baby dressed in a fluffy outfit is gently nose-to-nose with a small kitten. The background is softly blurred, highlighting the tender interaction between them.",
+        ),
         workflow_json: str = Input(
-            description="Your ComfyUI workflow as JSON string or URL. You must use the API version of your workflow. Get it from ComfyUI using 'Save (API format)'. Instructions here: https://github.com/replicate/cog-comfyui",
-            default="",
+            description="Your ComfyUI workflow as JSON string or URL. Default: WAN2.2 text-to-video workflow. Get API format from ComfyUI using 'Save (API format)'. Instructions: https://github.com/replicate/cog-comfyui",
+            default=WAN22_WORKFLOW_JSON,
         ),
         input_file: Optional[Path] = Input(
             description="Input image, video, tar or zip file. Read guidance on workflows and input files here: https://github.com/replicate/cog-comfyui. Alternatively, you can replace inputs with URLs in your JSON workflow and the model will download them."
@@ -148,7 +160,40 @@ class Predictor(BasePredictor):
             except requests.exceptions.RequestException as e:
                 raise ValueError(f"Failed to download workflow JSON from URL: {e}")
 
-        wf = self.comfyUI.load_workflow(workflow_json_content or EXAMPLE_WORKFLOW_JSON)
+        # Check if we're using the default workflow (compare content, not just existence)
+        default_wf_content = WAN22_WORKFLOW_JSON.strip()
+        user_wf_content = (workflow_json_content or "").strip()
+        using_default_workflow = (
+            not workflow_json_content or user_wf_content == default_wf_content
+        )
+
+        print(f"Using default WAN2.2 workflow: {using_default_workflow}")
+        print(f"User prompt: {prompt}")
+        print(
+            f"Workflow content length - Default: {len(default_wf_content)}, User: {len(user_wf_content)}"
+        )
+
+        wf = self.comfyUI.load_workflow(workflow_json_content or WAN22_WORKFLOW_JSON)
+
+        # If using default WAN2.2 workflow, always replace the prompt with user input
+        if using_default_workflow:
+            if "6" in wf and "inputs" in wf["6"] and "text" in wf["6"]["inputs"]:
+                original_prompt = wf["6"]["inputs"]["text"]
+                wf["6"]["inputs"]["text"] = prompt
+                print(f"Replaced prompt: '{original_prompt}' -> '{prompt}'")
+            else:
+                print("Warning: Could not find prompt node '6' in workflow to replace")
+                print(f"Available nodes: {list(wf.keys())}")
+                # Try to find any CLIPTextEncode node
+                for node_id, node_data in wf.items():
+                    if node_data.get(
+                        "class_type"
+                    ) == "CLIPTextEncode" and "text" in node_data.get("inputs", {}):
+                        wf[node_id]["inputs"]["text"] = prompt
+                        print(
+                            f"Found and updated CLIPTextEncode node '{node_id}' with prompt: {prompt}"
+                        )
+                        break
 
         self.comfyUI.connect()
 
