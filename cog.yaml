@@ -13,5 +13,11 @@ build:
     - pget https://huggingface.co/QuantStack/Wan2.2-T2V-A14B-GGUF/resolve/main/LowNoise/Wan2.2-T2V-A14B-LowNoise-Q4_K_M.gguf /src/ComfyUI/models/unet/Wan2.2-T2V-A14B-LowNoise-Q4_K_M.gguf
     - pget https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/Lightx2v/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors /src/ComfyUI/models/loras/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors
     - pget https://huggingface.co/vrgamedevgirl84/Wan14BT2VFusioniX/resolve/main/FusionX_LoRa/Wan2.1_T2V_14B_FusionX_LoRA.safetensors /src/ComfyUI/models/loras/Wan2.1_T2V_14B_FusionX_LoRA.safetensors
+    - pget https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors /src/ComfyUI/models/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors
+    - mkdir -p /src/ComfyUI/models/vae /src/ComfyUI/models/upscale_models
+    - pget https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors /src/ComfyUI/models/vae/wan_2.1_vae.safetensors
+    - pget https://huggingface.co/ai-forever/Real-ESRGAN/resolve/a86fc6182b4650b4459cb1ddcb0a0d1ec86bf3b0/RealESRGAN_x2.pth /src/ComfyUI/models/upscale_models/RealESRGAN_x2.pth
+    - echo "DEBUG Model files downloaded"
+    - find /src/ComfyUI/models -name "*.safetensors" -o -name "*.gguf" -o -name "*.pth" | head -10
 predict: "predict.py:Predictor"
 train: "train.py:train"

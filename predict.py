@@ -39,6 +39,14 @@ with open("examples/api_workflows/birefnet_api.json", "r") as file:
 
 class Predictor(BasePredictor):
     def setup(self, weights: str):
+        # Install custom nodes on first startup
+        import subprocess
+
+        if not os.path.exists("ComfyUI/custom_nodes/ComfyUI-GGUF"):
+            print("🔧 Installing custom nodes...")
+            subprocess.run(["python", "scripts/install_custom_nodes.py"], check=True)
+            print("✅ Custom nodes installed")
+
         if bool(weights):
             self.handle_user_weights(weights)
 

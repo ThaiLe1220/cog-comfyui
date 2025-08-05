@@ -112,16 +112,28 @@ class ComfyUI:
                             if key in input_value
                         )
                     elif any(input_value.endswith(ft) for ft in weights_filetypes):
+                        print(f"🔍 Processing model file: {input_value}")
+
+                        # Check if file is pre-downloaded BEFORE synonym conversion
+                        if self.weights_downloader.check_pre_downloaded_file(
+                            input_value
+                        ):
+                            print(
+                                f"✅ {input_value} found pre-downloaded, skipping weights system"
+                            )
+                            continue
+
                         # Sometimes a model will have a number of common filenames
                         weight_str = self.weights_downloader.get_canonical_weight_str(
                             input_value
                         )
                         if weight_str != input_value:
                             print(
-                                f"Converting model synonym {input_value} to {weight_str}"
+                                f"🔄 Converting model synonym {input_value} to {weight_str}"
                             )
                             node["inputs"][input_key] = weight_str
 
+                        print(f"📥 Adding to download queue: {weight_str}")
                         weights_to_download.append(weight_str)
 
         weights_to_download = list(set(weights_to_download))
@@ -184,7 +196,9 @@ class ComfyUI:
                                 print(f"✅ {filename}")
 
         if missing_inputs:
-            raise Exception(f"Missing required input files: {', '.join(missing_inputs)}")
+            raise Exception(
+                f"Missing required input files: {', '.join(missing_inputs)}"
+            )
 
         print("====================================")
 
@@ -266,9 +280,12 @@ class ComfyUI:
 
                     if (
                         "exception_message" in error_data
-                        and "Unauthorized: Please login first to use this node" in error_data["exception_message"]
+                        and "Unauthorized: Please login first to use this node"
+                        in error_data["exception_message"]
                     ):
-                        raise Exception("ComfyUI API nodes are not currently supported.")
+                        raise Exception(
+                            "ComfyUI API nodes are not currently supported."
+                        )
 
                     error_message = json.dumps(message, indent=2)
                     raise Exception(
