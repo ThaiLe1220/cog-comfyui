@@ -47,11 +47,33 @@ class Predictor(BasePredictor):
             subprocess.run(["python", "scripts/install_custom_nodes.py"], check=True)
             print("✅ Custom nodes installed")
 
+        print("🔄 Initializing ComfyUI...")
+
+        # Try the most common ComfyUI initialization patterns
+        try:
+            # Pattern 1: Just server address
+            self.comfyUI = ComfyUI("http://127.0.0.1:8188")
+            print("✅ ComfyUI initialized with server address only")
+        except TypeError as e:
+            print(f"Pattern 1 failed: {e}")
+            try:
+                # Pattern 2: Server + output dir
+                self.comfyUI = ComfyUI("http://127.0.0.1:8188", "/tmp/outputs")
+                print("✅ ComfyUI initialized with server + output dir")
+            except TypeError as e:
+                print(f"Pattern 2 failed: {e}")
+                try:
+                    # Pattern 3: No arguments (default constructor)
+                    self.comfyUI = ComfyUI()
+                    print("✅ ComfyUI initialized with default constructor")
+                except Exception as e:
+                    print(f"All patterns failed: {e}")
+                    raise
+
+        print("✅ ComfyUI setup complete")
+
         if bool(weights):
             self.handle_user_weights(weights)
-
-        self.comfyUI = ComfyUI("127.0.0.1:8188")
-        self.comfyUI.start_server(OUTPUT_DIR, INPUT_DIR)
 
     def handle_user_weights(self, weights: str):
         if hasattr(weights, "url"):

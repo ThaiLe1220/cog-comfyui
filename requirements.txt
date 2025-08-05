@@ -1,3 +1,5 @@
+# Replace your current requirements.txt with this version:
+
 torch>=2.5.1
 torchvision>=0.20.1
 torchaudio>=2.5.1
@@ -17,7 +19,12 @@ psutil
 spandrel
 soundfile
 kornia>=0.7.1
-websocket-client==1.6.3
+
+# WebSocket fix - try different approach
+websocket-client>=1.8.0
+# Alternative: add both packages to ensure compatibility
+# websockets
+
 diffusers>=0.31.0
 av>=14.2.0
 comfyui-frontend-package==1.23.4
@@ -67,3 +74,5 @@ huggingface_hub[hf-transfer]
 iopath
 gguf>=0.13.0
 protobuf
+blend_modes
+alembic

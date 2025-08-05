@@ -6,5 +6,16 @@
   "ae.sft": "ae.safetensors",
   "hunyuan_video_v2_replace_image_to_video_720p_bf16.safetensors": "hunyuan_video_image_to_video_720p_bf16.safetensors",
   "Wan2_1_VAE_bf16.safetensors": "wan_2.1_vae.safetensors",
+
+  "_comment": "WAN2.2 T2V Model URLs - Added for full pipeline support",
+  "Wan2.2-T2V-A14B-HighNoise-Q4_K_M.gguf": "https://huggingface.co/QuantStack/Wan2.2-T2V-A14B-GGUF/resolve/main/HighNoise/Wan2.2-T2V-A14B-HighNoise-Q4_K_M.gguf",
+  "Wan2.2-T2V-A14B-LowNoise-Q4_K_M.gguf": "https://huggingface.co/QuantStack/Wan2.2-T2V-A14B-GGUF/resolve/main/LowNoise/Wan2.2-T2V-A14B-LowNoise-Q4_K_M.gguf",
+  "lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors": "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/Lightx2v/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors",
+  "Wan2.1_T2V_14B_FusionX_LoRA.safetensors": "https://huggingface.co/vrgamedevgirl84/Wan14BT2VFusioniX/resolve/main/FusionX_LoRa/Wan2.1_T2V_14B_FusionX_LoRA.safetensors",
+  "wan_2.1_vae.safetensors": "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors",
+  "RealESRGAN_x2.pth": "https://huggingface.co/ai-forever/Real-ESRGAN/resolve/a86fc6182b4650b4459cb1ddcb0a0d1ec86bf3b0/RealESRGAN_x2.pth",
+  "rife47.pth": "https://huggingface.co/AlexWortega/RIFE/resolve/main/rife47.pth",
+
+  "_comment2": "Keep existing URL mapping for text encoder",
   "umt5_xxl_fp8_e4m3fn_scaled.safetensors": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors"
 }

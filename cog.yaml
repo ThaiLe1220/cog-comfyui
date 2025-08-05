@@ -1,23 +1,62 @@
 build:
   gpu: true
   cuda: "12.1"
-  system_packages:
-    - ffmpeg
   python_version: "3.12"
-  python_requirements: requirements.txt
+  system_packages:
+    - "libgl1-mesa-glx"
+    - "libglib2.0-0"
+    - "libgomp1"
+    - "ffmpeg"
+  python_packages:
+    - "torch==2.5.1"
+    - "torchvision==0.20.1"
+    - "torchaudio==2.5.1"
+    - "xformers==0.0.28.post3"
   run:
+    # Install pget for fast downloads
     - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/latest/download/pget_$(uname -s)_$(uname -m)" && chmod +x /usr/local/bin/pget
+    
+    # Install additional Python packages for ONNX and WAN2.2
     - pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
-    - mkdir -p /src/ComfyUI/models/unet /src/ComfyUI/models/loras
-    - pget https://huggingface.co/QuantStack/Wan2.2-T2V-A14B-GGUF/resolve/main/HighNoise/Wan2.2-T2V-A14B-HighNoise-Q4_K_M.gguf /src/ComfyUI/models/unet/Wan2.2-T2V-A14B-HighNoise-Q4_K_M.gguf
-    - pget https://huggingface.co/QuantStack/Wan2.2-T2V-A14B-GGUF/resolve/main/LowNoise/Wan2.2-T2V-A14B-LowNoise-Q4_K_M.gguf /src/ComfyUI/models/unet/Wan2.2-T2V-A14B-LowNoise-Q4_K_M.gguf
-    - pget https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/Lightx2v/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors /src/ComfyUI/models/loras/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors
-    - pget https://huggingface.co/vrgamedevgirl84/Wan14BT2VFusioniX/resolve/main/FusionX_LoRa/Wan2.1_T2V_14B_FusionX_LoRA.safetensors /src/ComfyUI/models/loras/Wan2.1_T2V_14B_FusionX_LoRA.safetensors
-    - pget https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors /src/ComfyUI/models/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors
-    - mkdir -p /src/ComfyUI/models/vae /src/ComfyUI/models/upscale_models
-    - pget https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors /src/ComfyUI/models/vae/wan_2.1_vae.safetensors
-    - pget https://huggingface.co/ai-forever/Real-ESRGAN/resolve/a86fc6182b4650b4459cb1ddcb0a0d1ec86bf3b0/RealESRGAN_x2.pth /src/ComfyUI/models/upscale_models/RealESRGAN_x2.pth
-    - echo "DEBUG Model files downloaded"
-    - find /src/ComfyUI/models -name "*.safetensors" -o -name "*.gguf" -o -name "*.pth" | head -10
+    
+    # Create all model directories
+    - mkdir -p /src/ComfyUI/models/unet
+    - mkdir -p /src/ComfyUI/models/loras  
+    - mkdir -p /src/ComfyUI/models/vae
+    - mkdir -p /src/ComfyUI/models/text_encoders
+    - mkdir -p /src/ComfyUI/models/upscale_models
+    - mkdir -p /src/ComfyUI/models/animatediff_models
+    - mkdir -p /src/ComfyUI/models/checkpoints
+    - mkdir -p /src/ComfyUI/models/clip
+    - mkdir -p /src/ComfyUI/models/controlnet
+    - mkdir -p /src/ComfyUI/models/diffusion_models
+    
+    # Download all WAN2.2 models (will be cached after first run)
+    - pget "https://huggingface.co/QuantStack/Wan2.2-T2V-A14B-GGUF/resolve/main/HighNoise/Wan2.2-T2V-A14B-HighNoise-Q4_K_M.gguf" /src/ComfyUI/models/unet/Wan2.2-T2V-A14B-HighNoise-Q4_K_M.gguf
+    - pget "https://huggingface.co/QuantStack/Wan2.2-T2V-A14B-GGUF/resolve/main/LowNoise/Wan2.2-T2V-A14B-LowNoise-Q4_K_M.gguf" /src/ComfyUI/models/unet/Wan2.2-T2V-A14B-LowNoise-Q4_K_M.gguf
+    - pget "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/Lightx2v/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors" /src/ComfyUI/models/loras/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors
+    - pget "https://huggingface.co/vrgamedevgirl84/Wan14BT2VFusioniX/resolve/main/FusionX_LoRa/Wan2.1_T2V_14B_FusionX_LoRA.safetensors" /src/ComfyUI/models/loras/Wan2.1_T2V_14B_FusionX_LoRA.safetensors
+    - pget "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors" /src/ComfyUI/models/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors
+    - pget "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors" /src/ComfyUI/models/vae/wan_2.1_vae.safetensors
+    - pget "https://huggingface.co/ai-forever/Real-ESRGAN/resolve/a86fc6182b4650b4459cb1ddcb0a0d1ec86bf3b0/RealESRGAN_x2.pth" /src/ComfyUI/models/upscale_models/RealESRGAN_x2.pth
+    - pget "https://huggingface.co/AlexWortega/RIFE/resolve/main/rife47.pth" /src/ComfyUI/models/animatediff_models/rife47.pth || echo "RIFE download failed - will be handled by custom node"
+    
+    # Install critical dependencies for custom nodes
+    - pip install blend_modes alembic gguf>=0.13.0 protobuf
+    
+    # WEBSOCKET FIX - Force clean install
+    - pip uninstall -y websocket websocket-client websockets || true
+    - pip install --no-cache-dir --force-reinstall websocket-client==1.8.0
+    - echo "Testing websocket import..." && python -c "import websocket; print('✅ WebSocket import successful')" || echo "❌ WebSocket import failed"
+    
+    # Set proper permissions and verify models
+    - chmod -R 755 /src/ComfyUI/models/
+    - echo "=== WAN2.2 Model Verification ==="
+    - echo "GGUF Models:" && ls -la /src/ComfyUI/models/unet/*.gguf || echo "❌ GGUF models missing"
+    - echo "VAE Model:" && ls -la /src/ComfyUI/models/vae/wan_2.1_vae.safetensors || echo "❌ VAE missing"  
+    - echo "LoRA Models:" && ls -la /src/ComfyUI/models/loras/ | grep -E "(lightx2v|FusionX)" || echo "❌ LoRAs missing"
+    - echo "Text Encoder:" && ls -la /src/ComfyUI/models/text_encoders/umt5* || echo "❌ Text encoder missing"
+    - echo "Upscaler:" && ls -la /src/ComfyUI/models/upscale_models/RealESRGAN* || echo "❌ Upscaler missing"
+    - echo "=== Verification Complete ==="
+
 predict: "predict.py:Predictor"
-train: "train.py:train"
