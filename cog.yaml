@@ -1,3 +1,5 @@
+predict: "predict.py:Predictor"
+
 build:
   gpu: true
   cuda: "12.1"
