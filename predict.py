@@ -49,26 +49,14 @@ class Predictor(BasePredictor):
 
         print("🔄 Initializing ComfyUI...")
 
-        # Try the most common ComfyUI initialization patterns
-        try:
-            # Pattern 1: Just server address
-            self.comfyUI = ComfyUI("http://127.0.0.1:8188")
-            print("✅ ComfyUI initialized with server address only")
-        except TypeError as e:
-            print(f"Pattern 1 failed: {e}")
-            try:
-                # Pattern 2: Server + output dir
-                self.comfyUI = ComfyUI("http://127.0.0.1:8188", "/tmp/outputs")
-                print("✅ ComfyUI initialized with server + output dir")
-            except TypeError as e:
-                print(f"Pattern 2 failed: {e}")
-                try:
-                    # Pattern 3: No arguments (default constructor)
-                    self.comfyUI = ComfyUI()
-                    print("✅ ComfyUI initialized with default constructor")
-                except Exception as e:
-                    print(f"All patterns failed: {e}")
-                    raise
+        # Initialize ComfyUI client and start server
+        self.comfyUI = ComfyUI("127.0.0.1:8188")
+        print("✅ ComfyUI client initialized")
+
+        # Start the ComfyUI server
+        print("🚀 Starting ComfyUI server...")
+        self.comfyUI.start_server(OUTPUT_DIR, INPUT_DIR)
+        print("✅ ComfyUI server started")
 
         print("✅ ComfyUI setup complete")
 
@@ -99,53 +87,26 @@ class Predictor(BasePredictor):
                     for root, _, files in os.walk(source):
                         for file in files:
                             if not os.path.exists(os.path.join(destination, file)):
-                                print(
-                                    f"Moving {os.path.join(root, file)} to {destination}"
+                                print(f"Moving {os.path.join(root, file)}")
+                                shutil.move(
+                                    os.path.join(root, file),
+                                    os.path.join(destination, file),
                                 )
-                                shutil.move(os.path.join(root, file), destination)
-                            else:
-                                print(
-                                    f"Skipping {file} because it already exists in {destination}"
-                                )
-
-    def handle_input_file(self, input_file: Path):
-        file_extension = self.get_file_extension(input_file)
-
-        if file_extension == ".tar":
-            with tarfile.open(input_file, "r") as tar:
-                tar.extractall(INPUT_DIR)
-        elif file_extension == ".zip":
-            with zipfile.ZipFile(input_file, "r") as zip_ref:
-                zip_ref.extractall(INPUT_DIR)
-        elif file_extension in IMAGE_TYPES + VIDEO_TYPES:
-            shutil.copy(input_file, os.path.join(INPUT_DIR, f"input{file_extension}"))
-        else:
-            raise ValueError(f"Unsupported file type: {file_extension}")
-
-        print("====================================")
-        print(f"Inputs uploaded to {INPUT_DIR}:")
-        self.comfyUI.get_files(INPUT_DIR)
-        print("====================================")
-
-    def get_file_extension(self, input_file: Path) -> str:
-        file_extension = os.path.splitext(input_file)[1].lower()
-        if not file_extension:
-            with open(input_file, "rb") as f:
-                file_signature = f.read(4)
-            if file_signature.startswith(b"\x1f\x8b"):  # gzip signature
-                file_extension = ".tar"
-            elif file_signature.startswith(b"PK"):  # zip signature
-                file_extension = ".zip"
             else:
-                try:
-                    with Image.open(input_file) as img:
-                        file_extension = f".{img.format.lower()}"
-                        print(f"Determined file type: {file_extension}")
-                except Exception as e:
-                    raise ValueError(
-                        f"Unable to determine file type for: {input_file}, {e}"
-                    )
-        return file_extension
+                if not os.path.exists(destination):
+                    print(f"Moving {source} to {destination}")
+                    shutil.move(source, destination)
+
+    def filename_with_extension(self, input_file, prefix):
+        extension = os.path.splitext(input_file.name)[1]
+        return f"{prefix}{extension}"
+
+    def handle_input_file(
+        self,
+        input_file: Path,
+        filename: str = "image.png",
+    ):
+        shutil.copy(input_file, os.path.join(INPUT_DIR, filename))
 
     def predict(
         self,
@@ -154,14 +115,15 @@ class Predictor(BasePredictor):
             default="A baby dressed in a fluffy outfit is gently nose-to-nose with a small kitten. The background is softly blurred, highlighting the tender interaction between them.",
         ),
         workflow_json: str = Input(
-            description="Your ComfyUI workflow as JSON string or URL. Default: WAN2.2 text-to-video workflow. Get API format from ComfyUI using 'Save (API format)'. Instructions: https://github.com/replicate/cog-comfyui",
-            default=WAN22_WORKFLOW_JSON,
+            description="Your ComfyUI workflow as JSON string or URL. Default: WAN2.2 text-to-video workflow.",
+            default="",
         ),
-        input_file: Optional[Path] = Input(
-            description="Input image, video, tar or zip file. Read guidance on workflows and input files here: https://github.com/replicate/cog-comfyui. Alternatively, you can replace inputs with URLs in your JSON workflow and the model will download them."
+        input_file: Path = Input(
+            description="Input file (image or video) for workflows that require media input",
+            default=None,
         ),
         return_temp_files: bool = Input(
-            description="Return any temporary files, such as preprocessed controlnet images. Useful for debugging.",
+            description="Return temporary files created during processing. Useful for debugging.",
             default=False,
         ),
         output_format: str = optimise_images.predict_output_format(),
