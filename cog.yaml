@@ -5,85 +5,71 @@ build:
   system_packages:
     - "libgl1-mesa-glx"
     - "libglib2.0-0"
-    - "libgomp1"
+    - "libgomp1" 
     - "ffmpeg"
+    - "wget"  # Add wget for complex downloads
   
   python_requirements: "requirements.txt"
   
   run:
-    # Install pget for fast downloads
+    # Install pget for simple downloads
     - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/latest/download/pget_$(uname -s)_$(uname -m)" && chmod +x /usr/local/bin/pget
     
     # Install additional Python packages for ONNX and WAN2.2
     - pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
     
-    # Create all model directories
-    - mkdir -p /src/ComfyUI/models/unet
-    - mkdir -p /src/ComfyUI/models/loras  
-    - mkdir -p /src/ComfyUI/models/vae
-    - mkdir -p /src/ComfyUI/models/text_encoders
-    - mkdir -p /src/ComfyUI/models/upscale_models
-    - mkdir -p /src/ComfyUI/models/animatediff_models
-    - mkdir -p /src/ComfyUI/models/checkpoints
-    - mkdir -p /src/ComfyUI/models/clip
-    - mkdir -p /src/ComfyUI/models/controlnet
-    - mkdir -p /src/ComfyUI/models/diffusion_models
+    # Create all model directories with proper ownership
+    - mkdir -p /src/ComfyUI/models/unet && chown -R root:root /src/ComfyUI/models/unet
+    - mkdir -p /src/ComfyUI/models/loras && chown -R root:root /src/ComfyUI/models/loras
+    - mkdir -p /src/ComfyUI/models/vae && chown -R root:root /src/ComfyUI/models/vae
+    - mkdir -p /src/ComfyUI/models/text_encoders && chown -R root:root /src/ComfyUI/models/text_encoders
+    - mkdir -p /src/ComfyUI/models/upscale_models && chown -R root:root /src/ComfyUI/models/upscale_models
+    - mkdir -p /src/ComfyUI/models/animatediff_models && chown -R root:root /src/ComfyUI/models/animatediff_models
+    - mkdir -p /src/ComfyUI/models/checkpoints && chown -R root:root /src/ComfyUI/models/checkpoints
+    - mkdir -p /src/ComfyUI/models/clip && chown -R root:root /src/ComfyUI/models/clip
+    - mkdir -p /src/ComfyUI/models/controlnet && chown -R root:root /src/ComfyUI/models/controlnet
+    - mkdir -p /src/ComfyUI/models/diffusion_models && chown -R root:root /src/ComfyUI/models/diffusion_models
     
-    # FIXED: Download to /tmp first, then move to ensure correct placement
-    # Download WAN2.2 GGUF models
-    - echo "🔄 Downloading GGUF models to /tmp then moving to correct locations..."
-    - pget "https://huggingface.co/QuantStack/Wan2.2-T2V-A14B-GGUF/resolve/main/HighNoise/Wan2.2-T2V-A14B-HighNoise-Q4_K_M.gguf" /tmp/Wan2.2-T2V-A14B-HighNoise-Q4_K_M.gguf
-    - pget "https://huggingface.co/QuantStack/Wan2.2-T2V-A14B-GGUF/resolve/main/LowNoise/Wan2.2-T2V-A14B-LowNoise-Q4_K_M.gguf" /tmp/Wan2.2-T2V-A14B-LowNoise-Q4_K_M.gguf
-    - mv /tmp/Wan2.2-T2V-A14B-HighNoise-Q4_K_M.gguf /src/ComfyUI/models/unet/
-    - mv /tmp/Wan2.2-T2V-A14B-LowNoise-Q4_K_M.gguf /src/ComfyUI/models/unet/
-    - echo "✅ GGUF models moved to /src/ComfyUI/models/unet/"
+    # Download WAN2.2 GGUF models - Use wget for complex HuggingFace redirects
+    - echo "🔄 Downloading GGUF models with wget (handles HF redirects properly)..."
+    - wget --content-disposition --trust-server-names --timeout=3600 --tries=3 -O /src/ComfyUI/models/unet/Wan2.2-T2V-A14B-HighNoise-Q4_K_M.gguf "https://huggingface.co/QuantStack/Wan2.2-T2V-A14B-GGUF/resolve/main/HighNoise/Wan2.2-T2V-A14B-HighNoise-Q4_K_M.gguf"
+    - wget --content-disposition --trust-server-names --timeout=3600 --tries=3 -O /src/ComfyUI/models/unet/Wan2.2-T2V-A14B-LowNoise-Q4_K_M.gguf "https://huggingface.co/QuantStack/Wan2.2-T2V-A14B-GGUF/resolve/main/LowNoise/Wan2.2-T2V-A14B-LowNoise-Q4_K_M.gguf"
+    - echo "✅ GGUF models downloaded directly to /src/ComfyUI/models/unet/"
     
-    # Download LoRA models to /tmp then move
+    # Download LoRA models directly to correct location
     - echo "🔄 Downloading LoRA models..."
-    - pget "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/Lightx2v/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors" /tmp/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors
-    - pget "https://huggingface.co/vrgamedevgirl84/Wan14BT2VFusioniX/resolve/main/FusionX_LoRa/Wan2.1_T2V_14B_FusionX_LoRA.safetensors" /tmp/Wan2.1_T2V_14B_FusionX_LoRA.safetensors
-    - mv /tmp/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors /src/ComfyUI/models/loras/
-    - mv /tmp/Wan2.1_T2V_14B_FusionX_LoRA.safetensors /src/ComfyUI/models/loras/
-    - echo "✅ LoRA models moved to /src/ComfyUI/models/loras/"
+    - pget "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/Lightx2v/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors" /src/ComfyUI/models/loras/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors
+    - pget "https://huggingface.co/vrgamedevgirl84/Wan14BT2VFusioniX/resolve/main/FusionX_LoRa/Wan2.1_T2V_14B_FusionX_LoRA.safetensors" /src/ComfyUI/models/loras/Wan2.1_T2V_14B_FusionX_LoRA.safetensors
+    - echo "✅ LoRA models downloaded to /src/ComfyUI/models/loras/"
     
-    # Download text encoder and VAE (these already work correctly)
-    - pget "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors" /src/ComfyUI/models/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors
+    # Download VAE and text encoder (these already work)
+    - echo "🔄 Downloading VAE and text encoder..."
     - pget "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors" /src/ComfyUI/models/vae/wan_2.1_vae.safetensors
+    - pget "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors" /src/ComfyUI/models/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors
+    - echo "✅ VAE and text encoder downloaded"
     
-    # Download upscaler to /tmp then move
+    # Download upscaler directly to correct location  
     - echo "🔄 Downloading upscaler..."
-    - pget "https://huggingface.co/ai-forever/Real-ESRGAN/resolve/a86fc6182b4650b4459cb1ddcb0a0d1ec86bf3b0/RealESRGAN_x2.pth" /tmp/RealESRGAN_x2.pth
-    - mv /tmp/RealESRGAN_x2.pth /src/ComfyUI/models/upscale_models/
-    - echo "✅ Upscaler moved to /src/ComfyUI/models/upscale_models/"
+    - pget "https://huggingface.co/ai-forever/Real-ESRGAN/resolve/a86fc6182b4650b4459cb1ddcb0a0d1ec86bf3b0/RealESRGAN_x2.pth" /src/ComfyUI/models/upscale_models/RealESRGAN_x2.pth
+    - echo "✅ Upscaler downloaded to /src/ComfyUI/models/upscale_models/"
     
-    # RIFE will be handled automatically by ComfyUI-Frame-Interpolation custom node
-    
-    # Install critical dependencies for custom nodes
+    # Install additional dependencies for WAN2.2 pipeline
     - pip install blend_modes alembic gguf>=0.13.0 protobuf
     
-    # WEBSOCKET FIX - Force clean install
+    # Fix websocket compatibility issues
     - pip uninstall -y websocket websocket-client websockets || true
     - pip install --no-cache-dir --force-reinstall websocket-client==1.8.0
-    - echo "Testing websocket import..." && python -c "import websocket; print('✅ WebSocket import successful')" || echo "❌ WebSocket import failed"
     
-    # Test safetensors import to verify fix
-    - echo "Testing safetensors import..." && python -c "import safetensors; print('✅ safetensors import successful')" || echo "❌ safetensors import failed"
+    # Verify critical dependencies
+    - echo "Testing websocket import..." && python -c "import websocket; print('✅ WebSocket imported successfully')"
+    - echo "Testing safetensors import..." && python -c "import safetensors; print('✅ safetensors imported successfully')"
     
-    # CLEANUP: Move any misplaced files to correct locations (fallback safety)
-    - echo "🔧 Moving any misplaced files to correct locations..."
-    - mv /src/ComfyUI/models/checkpoints/lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors /src/ComfyUI/models/loras/ 2>/dev/null || echo "LightX2V LoRA already in correct location"
-    - mv /src/ComfyUI/models/checkpoints/Wan2.1_T2V_14B_FusionX_LoRA.safetensors /src/ComfyUI/models/loras/ 2>/dev/null || echo "FusionX LoRA already in correct location"  
-    - mv /src/ComfyUI/models/checkpoints/RealESRGAN_x2.pth /src/ComfyUI/models/upscale_models/ 2>/dev/null || echo "RealESRGAN already in correct location"
-    
-    # Set proper permissions and verify models
-    - chmod -R 755 /src/ComfyUI/models/
+    # Final verification - check all models are in correct locations
     - echo "=== WAN2.2 Model Verification ==="
-    - echo "GGUF Models:" && ls -la /src/ComfyUI/models/unet/*.gguf && echo "✅ GGUF models found!" || echo "❌ GGUF models missing"
-    - echo "VAE Model:" && ls -la /src/ComfyUI/models/vae/wan_2.1_vae.safetensors && echo "✅ VAE found!" || echo "❌ VAE missing"  
-    - echo "LoRA Models:" && ls -la /src/ComfyUI/models/loras/ | grep -E "(lightx2v|FusionX)" && echo "✅ LoRA models found!" || echo "❌ LoRAs missing"
-    - echo "Text Encoder:" && ls -la /src/ComfyUI/models/text_encoders/umt5* && echo "✅ Text encoder found!" || echo "❌ Text encoder missing"
-    - echo "Upscaler:" && ls -la /src/ComfyUI/models/upscale_models/RealESRGAN* && echo "✅ Upscaler found!" || echo "❌ Upscaler missing"
+    - echo "GGUF Models:" && ls -la /src/ComfyUI/models/unet/*.gguf && echo "✅ GGUF models found"
+    - echo "VAE Model:" && ls -la /src/ComfyUI/models/vae/wan_2.1_vae.safetensors && echo "✅ VAE model found" 
+    - echo "LoRA Models:" && ls -la /src/ComfyUI/models/loras/ | grep -E "(lightx2v|FusionX)" && echo "✅ LoRA models found"
+    - echo "Text Encoder:" && ls -la /src/ComfyUI/models/text_encoders/umt5* && echo "✅ Text encoder found"
+    - echo "Upscaler:" && ls -la /src/ComfyUI/models/upscale_models/RealESRGAN* && echo "✅ Upscaler found"
     - echo "RIFE will be downloaded automatically by ComfyUI-Frame-Interpolation custom node on first use"
-    - echo "=== Verification Complete ==="
-
-predict: "predict.py:Predictor"
+    - echo "=== Build Verification Complete ==="
