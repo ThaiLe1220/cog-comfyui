@@ -29,7 +29,7 @@ IMAGE_TYPES = [".jpg", ".jpeg", ".png", ".webp"]
 VIDEO_TYPES = [".mp4", ".mov", ".avi", ".mkv", ".webm"]
 
 # Load WAN2.2 workflow as default
-with open("workflow/workflow-wan22-wan21 (1).json", "r") as file:
+with open("workflow/Wan2.2-Testing.json", "r") as file:
     WAN22_WORKFLOW_JSON = file.read()
 
 # Keep original as fallback

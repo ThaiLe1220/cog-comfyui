@@ -83,7 +83,7 @@ protobuf
 **Updated `predict.py`:**
 ```python
 # Load WAN2.2 workflow as default
-with open("workflow/workflow-wan22-wan21 (1).json", "r") as file:
+with open("workflow/Wan2.2-Testing.json", "r") as file:
     WAN22_WORKFLOW_JSON = file.read()
 
 # Updated input parameters

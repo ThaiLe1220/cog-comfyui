@@ -1,7 +1,7 @@
 {
   "6": {
     "inputs": {
-      "text": "A baby dressed in a fluffy outfit is gently nose-to-nose with a small kitten. The background is softly blurred, highlighting the tender interaction between them.",
+      "text": "A serene lake at sunset",
       "clip": [
         "12",
         0
@@ -14,7 +14,7 @@
   },
   "7": {
     "inputs": {
-      "text": "色调艳丽, 过曝, 静态, 细节模糊不清, 字幕, 风格, 作品, 画作, 画面, 静止, 整体发灰, 最差质量, 低质量, JPEG压缩残留, 丑陋的, 残缺的, 多余的手指, 画得不好的手部, 画得不好的脸部, 畸形的, 毁容的, 形态畸形的肢体, 手指融合, 静止不动的画面, 杂乱的背景, 三条腿, 背景人很多, 倒着走",
+      "text": "色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，毁容的，形态畸形的肢体，手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走",
       "clip": [
         "12",
         0
@@ -48,7 +48,7 @@
   "44": {
     "inputs": {
       "add_noise": "disable",
-      "noise_seed": 270712418741028,
+      "noise_seed": 702082620189731,
       "steps": 8,
       "cfg": 1,
       "sampler_name": "res_multistep",
@@ -81,7 +81,7 @@
   "45": {
     "inputs": {
       "add_noise": "enable",
-      "noise_seed": 868084697386425,
+      "noise_seed": 338578907303830,
       "steps": 8,
       "cfg": 1,
       "sampler_name": "res_multistep",
@@ -102,7 +102,7 @@
         0
       ],
       "latent_image": [
-        "73",
+        "63",
         0
       ]
     },
@@ -113,7 +113,7 @@
   },
   "46": {
     "inputs": {
-      "unet_name": "Wan2.2-T2V-A14B-HighNoise-Q4_K_M.gguf"
+      "unet_name": "Wan2.2-T2V-A14B-LowNoise-Q4_K_M.gguf"
     },
     "class_type": "UnetLoaderGGUF",
     "_meta": {
@@ -124,7 +124,7 @@
     "inputs": {
       "shift": 8.000000000000002,
       "model": [
-        "50",
+        "59",
         0
       ]
     },
@@ -137,7 +137,7 @@
     "inputs": {
       "shift": 8.000000000000002,
       "model": [
-        "51",
+        "50",
         0
       ]
     },
@@ -148,7 +148,7 @@
   },
   "49": {
     "inputs": {
-      "unet_name": "Wan2.2-T2V-A14B-LowNoise-Q4_K_M.gguf"
+      "unet_name": "Wan2.2-T2V-A14B-HighNoise-Q4_K_M.gguf"
     },
     "class_type": "UnetLoaderGGUF",
     "_meta": {
@@ -158,7 +158,7 @@
   "50": {
     "inputs": {
       "lora_name": "lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors",
-      "strength_model": 1.0000000000000002,
+      "strength_model": 1,
       "model": [
         "58",
         0
@@ -171,10 +171,10 @@
   },
   "51": {
     "inputs": {
-      "lora_name": "lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors",
-      "strength_model": 1.0000000000000002,
+      "lora_name": "Wan2.1_T2V_14B_FusionX_LoRA.safetensors",
+      "strength_model": 0.5000000000000001,
       "model": [
-        "59",
+        "49",
         0
       ]
     },
@@ -199,10 +199,10 @@
   },
   "59": {
     "inputs": {
-      "lora_name": "Wan2.1_T2V_14B_FusionX_LoRA.safetensors",
-      "strength_model": 0.5000000000000001,
+      "lora_name": "lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors",
+      "strength_model": 1,
       "model": [
-        "49",
+        "51",
         0
       ]
     },
@@ -211,34 +211,20 @@
       "title": "LoraLoaderModelOnly"
     }
   },
-  "64": {
+  "63": {
     "inputs": {
-      "frame_rate": 8,
-      "loop_count": 0,
-      "filename_prefix": "AnimateDiff",
-      "format": "video/h264-mp4",
-      "pix_fmt": "yuv420p",
-      "crf": 19,
-      "save_metadata": true,
-      "trim_to_audio": false,
-      "pingpong": false,
-      "save_output": true,
-      "images": [
-        "71",
-        0
-      ]
+      "width": 480,
+      "height": 864,
+      "length": 17,
+      "batch_size": 1
     },
-    "class_type": "VHS_VideoCombine",
+    "class_type": "EmptyHunyuanLatentVideo",
     "_meta": {
-      "title": "Video Combine 🎥🅥🅗🅢"
+      "title": "EmptyHunyuanLatentVideo"
     }
   },
-  "65": {
+  "64": {
     "inputs": {
-      "tile_size": 512,
-      "overlap": 64,
-      "temporal_size": 64,
-      "temporal_overlap": 8,
       "samples": [
         "44",
         0
@@ -248,68 +234,96 @@
         0
       ]
     },
-    "class_type": "VAEDecodeTiled",
+    "class_type": "VAEDecode",
     "_meta": {
-      "title": "VAE Decode (Tiled)"
+      "title": "VAE Decode"
+    }
+  },
+  "65": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "fps": 16,
+      "lossless": false,
+      "quality": 90,
+      "method": "default",
+      "images": [
+        "64",
+        0
+      ]
+    },
+    "class_type": "SaveAnimatedWEBP",
+    "_meta": {
+      "title": "SaveAnimatedWEBP"
     }
   },
   "69": {
     "inputs": {
-      "upscale_model": [
-        "70",
-        0
-      ],
-      "image": [
-        "65",
+      "purge_cache": true,
+      "purge_models": true,
+      "anything": [
+        "44",
         0
       ]
     },
-    "class_type": "ImageUpscaleWithModel",
+    "class_type": "LayerUtility: PurgeVRAM",
     "_meta": {
-      "title": "Upscale Image (using Model)"
-    }
-  },
-  "70": {
-    "inputs": {
-      "model_name": "RealESRGAN_x2.pth"
-    },
-    "class_type": "UpscaleModelLoader",
-    "_meta": {
-      "title": "Load Upscale Model"
+      "title": "LayerUtility: Purge VRAM"
     }
   },
   "71": {
     "inputs": {
-      "ckpt_name": "rife47.pth",
-      "clear_cache_after_n_frames": 10,
-      "multiplier": 2,
-      "fast_mode": true,
-      "ensemble": true,
-      "scale_factor": 1,
-      "frames": [
-        "69",
+      "purge_cache": true,
+      "purge_models": true,
+      "anything": [
+        "64",
         0
       ]
     },
-    "class_type": "RIFE VFI",
+    "class_type": "LayerUtility: PurgeVRAM",
     "_meta": {
-      "title": "RIFE VFI (recommend rife47 and rife49)"
+      "title": "LayerUtility: Purge VRAM"
+    }
+  },
+  "72": {
+    "inputs": {
+      "purge_cache": true,
+      "purge_models": true,
+      "anything": [
+        "47",
+        0
+      ]
+    },
+    "class_type": "LayerUtility: PurgeVRAM",
+    "_meta": {
+      "title": "LayerUtility: Purge VRAM"
     }
   },
   "73": {
     "inputs": {
-      "width": 384,
-      "height": 704,
-      "length": 41,
-      "batch_size": 1,
-      "vae": [
-        "14",
+      "purge_cache": true,
+      "purge_models": true,
+      "anything": [
+        "48",
         0
       ]
     },
-    "class_type": "Wan22ImageToVideoLatent",
+    "class_type": "LayerUtility: PurgeVRAM",
     "_meta": {
-      "title": "Wan22ImageToVideoLatent"
+      "title": "LayerUtility: Purge VRAM"
+    }
+  },
+  "74": {
+    "inputs": {
+      "purge_cache": true,
+      "purge_models": true,
+      "anything": [
+        "45",
+        0
+      ]
+    },
+    "class_type": "LayerUtility: PurgeVRAM",
+    "_meta": {
+      "title": "LayerUtility: Purge VRAM"
     }
   }
 }
