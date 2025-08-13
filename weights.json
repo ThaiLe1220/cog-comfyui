@@ -216,6 +216,8 @@
   ],
   "LORAS": [
     "3d_render_style_xl.safetensors",
+    "lightx2v_T2V_14B_cfg_step_distill_v2_lora_rank64_bf16.safetensors",
+    "Wan2.1_T2V_14B_FusionX_LoRA.safetensors",
     "add-detail-xl.safetensors",
     "aesthetic_anime_v1s.safetensors",
     "age_slider-LECO-v1.safetensors",
@@ -565,6 +567,8 @@
   "UNET": [
     "flux1-dev.safetensors",
     "flux1-schnell.safetensors",
+    "Wan2.2-T2V-A14B-HighNoise-Q2_K.gguf",
+    "Wan2.2-T2V-A14B-LowNoise-Q2_K.gguf",
     "iclight_sd15_fbc.safetensors",
     "iclight_sd15_fbc_unet_ldm.safetensors",
     "iclight_sd15_fc.safetensors",

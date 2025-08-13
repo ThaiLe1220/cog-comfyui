@@ -27,7 +27,7 @@ ALL_DIRECTORIES = [OUTPUT_DIR, INPUT_DIR, COMFYUI_TEMP_OUTPUT_DIR]
 IMAGE_TYPES = [".jpg", ".jpeg", ".png", ".webp"]
 VIDEO_TYPES = [".mp4", ".mov", ".avi", ".mkv", ".webm"]
 
-with open("examples/api_workflows/birefnet_api.json", "r") as file:
+with open("examples/api_workflows/Wan22_basic_gguf.json", "r") as file:
     EXAMPLE_WORKFLOW_JSON = file.read()
 
 
@@ -49,7 +49,9 @@ class Predictor(BasePredictor):
             weights_url = weights
 
         print(f"Downloading user weights from: {weights_url}")
-        WeightsDownloader.download("weights.tar", weights_url, config["USER_WEIGHTS_PATH"])
+        WeightsDownloader.download(
+            "weights.tar", weights_url, config["USER_WEIGHTS_PATH"]
+        )
         for item in os.listdir(config["USER_WEIGHTS_PATH"]):
             source = os.path.join(config["USER_WEIGHTS_PATH"], item)
             destination = os.path.join(config["MODELS_PATH"], item)

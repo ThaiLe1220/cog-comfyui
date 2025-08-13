@@ -1,3 +1,7 @@
+## 2025-08-12
+- [Add ComfyUI_LayerStyle](https://github.com/chflame163/ComfyUI_LayerStyle) custom node
+
+- [Add ComfyUI-GGUF](https://github.com/city96/ComfyUI-GGUF) custom node
 ## 2025-07-28
 
 Wan 2.2 weights:
