@@ -1,0 +1,53 @@
+FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/x86_64-linux-gnu:/usr/local/nvidia/lib64:/usr/local/nvidia/bin
+ENV NVIDIA_DRIVER_CAPABILITIES=all
+
+# Add Python 3.12 repository and install it with distutils
+RUN apt-get update -qq && apt-get install -qqy --no-install-recommends \
+    software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update -qq && \
+    apt-get install -qqy --no-install-recommends \
+    python3.12 \
+    python3.12-dev \
+    python3.12-venv \
+    python3.12-distutils \
+    curl \
+    wget \
+    git \
+    ca-certificates \
+    ffmpeg && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install pip for Python 3.12 specifically
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
+
+# Set python3.12 as default python
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
+
+# Install cog runtime with Python 3.12 pip
+RUN python3.12 -m pip install https://github.com/replicate/cog-runtime/releases/download/v0.1.0-beta7/coglet-0.1.0b7-py3-none-any.whl
+
+# Install pget
+RUN curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/latest/download/pget_$(uname -s)_$(uname -m)" && chmod +x /usr/local/bin/pget
+
+# Copy and install Python dependencies
+COPY requirements.txt /tmp/requirements.txt
+RUN python3.12 -m pip install -r /tmp/requirements.txt
+
+# Install onnxruntime-gpu
+RUN python3.12 -m pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+
+# Copy your entire project
+WORKDIR /src
+COPY . /src
+
+# Expose port for fal.ai
+EXPOSE 5000
+
+# Simple test command for now
+CMD ["python", "--version"]

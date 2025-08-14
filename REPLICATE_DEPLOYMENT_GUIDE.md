@@ -14,7 +14,7 @@ This guide shows how to deploy and test your customized cog-comfyui (with WAN2.2
 cog push r8.im/your-username/custom-comfyui-wan22
 
 # Alternative: Use your actual Replicate username
-cog push r8.im/huyai/cog-comfyui-wan22
+cog push r8.im/huyai/cog-comfyui-wan-gguf
 ```
 
 ### 2. Test via Replicate Web Interface
